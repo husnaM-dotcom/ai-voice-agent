@@ -371,3 +371,106 @@ def test_booking_reduces_inventory():
 
         session.commit()
         session.close()
+
+def test_booking_details():
+    session = SessionLocal()
+    car = None
+
+    try:
+        car = session.query(Car).filter(
+            Car.model == "Yaris"
+        ).first()
+
+        assert car is not None
+        car_id = car.id
+
+    finally:
+        session.close()
+
+    try:
+        create_booking(
+            full_name="Booking Test",
+            email="booking_test@example.com",
+            phone="0509876543",
+            driving_license_number="BOOKING123",
+            car_id=car_id,
+            start_date=date(2026, 11, 25),
+            end_date=date(2026, 11, 28),
+            quantity=1,
+        )
+
+        session = SessionLocal()
+
+        customer = session.query(Customer).filter_by(
+            email="booking_test@example.com"
+        ).first()
+
+        assert customer is not None
+        assert customer.full_name == "Booking Test"
+        assert customer.phone == "0509876543"
+        assert customer.driving_license_number == "BOOKING123"
+
+        booking = session.query(Booking).filter_by(
+            customer_id=customer.id
+        ).first()
+
+        assert booking is not None
+        assert booking.car_id == car_id
+        assert booking.quantity == 1
+        assert booking.start_date == date(2026, 11, 25)
+        assert booking.end_date == date(2026, 11, 28)
+        assert booking.total_price == Decimal("120.00")
+        assert booking.status == "confirmed"
+
+        session.close()
+
+    finally:
+        session = SessionLocal()
+
+        customer = session.query(Customer).filter_by(
+            email="booking_test@example.com"
+        ).first()
+
+        if customer:
+            session.query(Booking).filter_by(
+                customer_id=customer.id
+            ).delete()
+            session.delete(customer)
+
+        session.commit()
+        session.close()
+
+
+def test_booking_rejected_when_unavailable():
+    session = SessionLocal()
+
+    car = session.query(Car).filter(
+        Car.model == "Yaris"
+    ).first()
+
+    car_id = car.id
+    available_quantity = car.quantity
+
+    session.close()
+
+    with pytest.raises(ValueError):
+        create_booking(
+            full_name="Rejected Test",
+            email="rejected@example.com",
+            phone="0501234567",
+            driving_license_number="REJECTED123",
+            car_id=car_id,
+            start_date=date(2026, 11, 20),
+            end_date=date(2026, 11, 23),
+            quantity=available_quantity + 1,
+        )
+
+    session = SessionLocal()
+
+    customer = session.query(Customer).filter_by(
+        email="rejected@example.com"
+    ).first()
+
+    assert customer is None
+
+    session.close()
