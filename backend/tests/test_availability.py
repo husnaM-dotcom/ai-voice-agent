@@ -5,6 +5,7 @@ from decimal import Decimal
 from backend.app.db.models import Car, Customer, Booking
 from backend.app.db.session import SessionLocal
 from backend.app.services.availability import check_availability
+from backend.app.services.booking import create_booking
 
 
 def test_check_availability():
@@ -291,3 +292,82 @@ if __name__ == "__main__":
     test_return_date()
     test_invalid_dates()
     test_invalid_quantity()
+
+
+
+def test_seeded_inventory():
+    results = check_availability(
+        start_date=date(2026, 11, 20),
+        end_date=date(2026, 11, 23),
+        requested_quantity=1,
+        category="Economy",
+    )
+
+    assert len(results) > 0
+
+    print("Seeded inventory test passed!")
+    for result in results:
+        print(
+            result["car"].brand,
+            result["car"].model,
+            "Available:",
+            result["available_quantity"],
+        )
+
+def test_booking_reduces_inventory():
+    session = SessionLocal()
+    car = None
+
+    try:
+        car = session.query(Car).filter(
+            Car.model == "Yaris"
+        ).first()
+
+        assert car is not None
+
+        car_id = car.id
+
+    finally:
+        session.close()
+
+    try:
+        create_booking(
+            full_name="Inventory Test",
+            email="inventory_test@example.com",
+            phone="0501234567",
+            driving_license_number="INVENTORY123",
+            car_id=car_id,
+            start_date=date(2026, 11, 20),
+            end_date=date(2026, 11, 23),
+            quantity=1,
+        )
+
+        results = check_availability(
+            start_date=date(2026, 11, 20),
+            end_date=date(2026, 11, 23),
+            category="Economy",
+            model="Yaris",
+        )
+
+        car_result = next(
+            item for item in results
+            if item["car"].id == car_id
+        )
+
+        assert car_result["available_quantity"] == 1
+
+    finally:
+        session = SessionLocal()
+
+        customer = session.query(Customer).filter_by(
+            email="inventory_test@example.com"
+        ).first()
+
+        if customer:
+            session.query(Booking).filter_by(
+                customer_id=customer.id
+            ).delete()
+            session.delete(customer)
+
+        session.commit()
+        session.close()
