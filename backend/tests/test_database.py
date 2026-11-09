@@ -28,9 +28,9 @@ def test_database_operations():
         # 2. Create a customer
         customer = Customer(
             full_name="Test Customer",
-            email="test@example.com",
+            email="database_test_2026@example.com",
             phone="0501234567",
-            driving_license_number="TEST12345",
+            driving_license_number="DATABASE_TEST_123",
         )
 
         # 3. Create a booking connecting the car and customer

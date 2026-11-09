@@ -337,14 +337,14 @@ def test_booking_reduces_inventory():
             phone="0501234567",
             driving_license_number="INVENTORY123",
             car_id=car_id,
-            start_date=date(2026, 11, 20),
-            end_date=date(2026, 11, 23),
+            start_date=date(2027, 1, 10),
+            end_date=date(2027, 1, 13),
             quantity=1,
         )
 
         results = check_availability(
-            start_date=date(2026, 11, 20),
-            end_date=date(2026, 11, 23),
+            start_date=date(2027, 1, 10),
+            end_date=date(2027, 1, 13),
             category="Economy",
             model="Yaris",
         )
