@@ -69,3 +69,11 @@ class ConversationState:
 
         if details:
             self.update_booking_details(details)
+
+    def confirm_booking(self):
+        if not self.is_booking_ready():
+            return False
+
+        self.booking_confirmed = True
+        return True
+

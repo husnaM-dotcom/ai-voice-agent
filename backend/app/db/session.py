@@ -13,7 +13,7 @@ DATABASE_URL = f"sqlite:///{BASE_DIR / 'car_rental.db'}"
 # Create the database engine
 engine = create_engine(
     DATABASE_URL,
-    echo=True
+    echo=False
 )
 
 # Create a session factory

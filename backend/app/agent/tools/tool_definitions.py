@@ -85,7 +85,10 @@ booking_tool_definition = types.FunctionDeclaration(
             },
             "car_id": {
                 "type": "INTEGER",
-                "description": "Car ID returned by the availability tool."
+                "description": (
+                    "Exact database car_id returned by availability_tool "
+                    "for the selected vehicle. Never invent an ID."
+                )
             },
             "start_date": {
                 "type": "STRING",
@@ -126,7 +129,13 @@ save_booking_details_definition = types.FunctionDeclaration(
             "email": {"type": "STRING"},
             "phone": {"type": "STRING"},
             "driving_license_number": {"type": "STRING"},
-            "car_id": {"type": "INTEGER"},
+            "car_id": {
+                "type": "INTEGER",
+                "description": (
+                    "Use ONLY the exact car_id returned by availability_tool "
+                    "for the selected model. Never invent or reuse a different ID."
+                )
+            },
             "start_date": {"type": "STRING"},
             "end_date": {"type": "STRING"},
             "quantity": {"type": "INTEGER"}
@@ -135,9 +144,21 @@ save_booking_details_definition = types.FunctionDeclaration(
 )
 
 
+confirm_booking_definition = types.FunctionDeclaration(
+    name="confirm_booking",
+    description=(
+        "Call this only after the customer explicitly agrees "
+        "to confirm the reservation."
+    ),
+    parameters={
+        "type": "OBJECT",
+        "properties": {}
+    }
+)
+
 cruis_tools = [
     availability_tool_definition,
     pricing_tool_definition,
-    booking_tool_definition,
-    save_booking_details_definition
+    save_booking_details_definition,
+    confirm_booking_definition,
 ]

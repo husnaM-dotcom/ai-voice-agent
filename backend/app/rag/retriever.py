@@ -25,9 +25,7 @@ def retrieve_relevant_chunks(question, top_k=3):
     relevant_chunks = []
 
     for document, distance in zip(documents, distances):
-        print("Distance:", distance)
-        print("Document:", document[:100])
-        print("-" * 40)
+        
 
         if distance <= 0.65:
             relevant_chunks.append(document)

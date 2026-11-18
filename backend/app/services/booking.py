@@ -120,6 +120,19 @@ def create_booking(
             quantity=quantity,
         )
 
+        existing_booking = session.scalar(
+            select(Booking).where(
+                Booking.customer_id == customer.id,
+                Booking.car_id == car.id,
+                Booking.start_date == start_date,
+                Booking.end_date == end_date,
+                Booking.status == "confirmed",
+            )
+        )
+
+        if existing_booking:
+            raise ValueError("This booking already exists.")
+
         # 6. Create the booking
         booking = Booking(
             customer_id=customer.id,
@@ -149,7 +162,10 @@ def create_booking(
         # 8. Save everything together
         session.commit()
 
-        return confirmation
+        return {
+            "success": True,
+            **{key: str(value) for key, value in confirmation.items()}
+        }
 
     except Exception:
         # Undo all database changes if anything fails
